@@ -1,11 +1,12 @@
 import { Form, Button, Row, Col } from "react-bootstrap"
 import FormContainer from "../components/FormContainer"
 import { Link, useNavigate } from "react-router-dom"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { useRegisterMutation } from "../slices/userApiSlice"
 import { setCredentials } from "../slices/authSlice"
 import Loader from "../components/Loader"
+import { toast } from "react-toastify"
 
 const RegisterScreen = () => {
   const [name, setName] = useState("")
@@ -20,18 +21,25 @@ const RegisterScreen = () => {
 
   const [register, { isLoading }] = useRegisterMutation()
 
+  useEffect(() => {
+    if (userInfo) {
+      navigate("/")
+    }
+  }, [navigate, userInfo])
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (password !== confirmPassword) {
-      console.log("password not match")
+      toast.warn("Passwords do not match")
     } else {
       try {
         const res = await register({ name, email, password }).unwrap()
         console.log(res)
         dispatch(setCredentials({ ...res }))
         navigate("/")
+        toast.success("You have successfully been registered")
       } catch (error) {
-        console.log(error.message)
+        toast.error(error.message)
       }
     }
   }
